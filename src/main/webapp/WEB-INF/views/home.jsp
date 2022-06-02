@@ -125,7 +125,7 @@
         </tr>
         </thead>
         <tbody>
-        <c:forEach items="${books}" var="varTemp">
+        <c:forEach items="${VO.books}" var="varTemp">
             <tr>
                 <td>${varTemp.getTitle()}</td>
                 <td>${varTemp.getAuthor()}</td>
