@@ -1,5 +1,7 @@
 package cl.acabrera.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,13 +10,18 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import cl.acabrera.modelDTO.BooksDTO;
 import cl.acabrera.service.BooksService;
+import cl.acabrera.vo.BooksVO;
 
 @Controller
 public class BooksController {
 
+	private static final Logger log = LoggerFactory.getLogger(BooksDTO.class);
+
+	
 	@Autowired
 	private BooksService booksService;
 	
@@ -25,84 +32,85 @@ public class BooksController {
 		ModelAndView modelAndView = new ModelAndView();
 	
 		//usamos operador ternario si noy datos en la variable busqueda, se muestran todos
-		modelAndView.addObject("books", (busqueda.isEmpty())?booksService.findAll():booksService.findAllByTitle(busqueda));
-//		modelAndView.addObject("books", booksService.findAll());
+		modelAndView.addObject("VO", (busqueda.isEmpty())?booksService.findAll():booksService.findAllByTitle(busqueda));
 		
-		//System.out.println(booksService.findAll().toString());
-		
-		modelAndView.setViewName("home");
+		modelAndView.setViewName("home");//redirigimos al home.jsp
 
 		return modelAndView;
 	}
 	
 	@GetMapping("/agregarForm")
 	public String agregarForm(Model model) {
-		return "agregar";
+		return "agregar"; //redirimos al /agregar del controlador
 	}
 
 	
 	//SAVE
 	@PostMapping("/agregar")
-	public ModelAndView agregar(@ModelAttribute BooksDTO book) {//@ModelAttibute cuando es un objeto
+	public ModelAndView agregar(@ModelAttribute BooksDTO book, RedirectAttributes ra) {//@ModelAttibute cuando es un objeto
 		
-		ModelAndView modelAndView = new ModelAndView();
-		
-		booksService.save(book);
+		BooksVO respuestaServicio = booksService.save(book);
+		ra.addFlashAttribute("mensaje",respuestaServicio.getMensaje());
 
-		modelAndView.addObject("books", booksService.findAll());
-		
-		return new ModelAndView("redirect:/home");
-		
+		if (respuestaServicio.getCodigo().equals("0")) {
+			return new ModelAndView("redirect:/home");
+		} else {
+			return new ModelAndView("redirect:/agregarForm");
+		}
 	}
 
 	@GetMapping("/editarForm")
-	public ModelAndView editarForm(@RequestParam String idBook) {
+	public ModelAndView editarForm(Model model,@RequestParam String idBook, RedirectAttributes ra) {
 		//Integer id = (Integer.parseInt(idBook));
 
-		ModelAndView modelAndView = new ModelAndView();
-		
-		
-		modelAndView.addObject("books", booksService.findByIdBook(idBook));
-		
-		modelAndView.setViewName("editar");//redirige a la página.jsp
-
-		return modelAndView; //realiza la acción
-		
-		//return new ModelAndView("editar");
-		
+		BooksVO respuestaServicio = new BooksVO();
+		respuestaServicio.setMensaje("No se pudo cargar la vista de edición, intente nuevamente.");
+		try {
+			respuestaServicio=booksService.findByIdBook(idBook);
+			model.addAttribute("mensaje", respuestaServicio.getMensaje());
+			model.addAttribute("VO", respuestaServicio.getBooks().get(0));
+			return new ModelAndView("editar");
+		} catch (Exception e) {
+			log.error("Error en BooksController editar", e);
+		}
+		ra.addFlashAttribute("mensaje",respuestaServicio.getMensaje());
+		respuestaServicio=booksService.findAll();	
+		return new ModelAndView("redirect:/home");
 	}
 
 
 	//UPDATE
 	@PostMapping("/editar")
-	public ModelAndView editar(@ModelAttribute BooksDTO book) {
-		
-		ModelAndView modelAndView = new ModelAndView();
-		
-		booksService.update(book);
+	public ModelAndView editar(@ModelAttribute BooksDTO book, RedirectAttributes ra) {
 
-		modelAndView.addObject("books", booksService.findAll());
-		
-		return new ModelAndView("redirect:/home");
+		BooksVO respuestaServicio = booksService.update(book);
+		ra.addFlashAttribute("mensaje", respuestaServicio.getMensaje());
+		if (respuestaServicio.getCodigo().equals("0")) {
+			return new ModelAndView("redirect:/home");
+		} else {
+			return new ModelAndView("redirect:/editarForm");
+		}
 		
 	}
 	
 	
 	//DELETE
 	@GetMapping("/eliminar")
-	public ModelAndView eliminar(@RequestParam String idBook) {
-
-		ModelAndView modelAndView = new ModelAndView();
-		
-		BooksDTO booksAEliminar=new BooksDTO();
-		booksAEliminar.setIdBook(idBook);
-		
-		booksService.delete(booksAEliminar);
-
-		modelAndView.addObject("books", booksService.findAll());
-
-		//return modelAndView;
-		
+	public ModelAndView eliminar(Model model, @RequestParam String idBook, RedirectAttributes ra) {
+		BooksVO respuestaServicio = new BooksVO();
+		respuestaServicio.setMensaje("No se pudo eliminar el libro, intente nuevamente.");
+		try {
+			BooksDTO eliminado=new BooksDTO();
+			eliminado.setIdBook(idBook);
+			respuestaServicio=booksService.delete(eliminado);
+			ra.addFlashAttribute("mensaje", respuestaServicio.getMensaje());
+			return new ModelAndView("redirect:/home");
+		} catch (Exception e) {
+			log.error("Error en BooksController eliminar", e);
+		}
+		ra.addFlashAttribute("mensaje", respuestaServicio.getMensaje());
+		respuestaServicio=booksService.findAll();
+		ra.addAttribute("VO", respuestaServicio);
 		return new ModelAndView("redirect:/home");
 	}
 

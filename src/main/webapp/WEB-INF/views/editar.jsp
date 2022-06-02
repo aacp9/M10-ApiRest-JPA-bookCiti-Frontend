@@ -33,17 +33,17 @@
 		</c:if>
 		-->
 		<form action="editar" method="post">
-			<input type="hidden" name="idBook" value="${books.getIdBook()}" />
+			<input type="hidden" name="idBook" value="${VO.getIdBook()}" />
 			<table>
 				<tr>
 					<td class="p-2"><label for="title">Título:</label></td>
 					<td><input class="form-control" type="text" name="title"
-						id="title" value="${books.getTitle()}" placeholder="Título" /></td>
+						id="title" value="${VO.getTitle()}" placeholder="Título" /></td>
 				</tr>
 				<tr>
 					<td class="p-2"><label for="author">Autor:</label></td>
 					<td><input class="form-control" type="text" id="author"
-						value="${books.getAuthor()}" placeholder="author" name="author" /></td>
+						value="${VO.getAuthor()}" placeholder="author" name="author" /></td>
 				</tr>
 				<tr>
 
@@ -55,7 +55,7 @@
 								<span class="input-group-text">!</span>
 							</div>
 							<input type="text" class="form-control"
-								value="${books.getLocation()}" name="location" id="location"
+								value="${VO.getLocation()}" name="location" id="location"
 								placeholder="Ubicación">
 						</div>
 					</td>

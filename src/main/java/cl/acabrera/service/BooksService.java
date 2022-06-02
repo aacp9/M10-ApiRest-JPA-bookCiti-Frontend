@@ -1,14 +1,13 @@
 package cl.acabrera.service;
 
-import java.util.List;
-
 import cl.acabrera.modelDTO.BooksDTO;
+import cl.acabrera.vo.BooksVO;
 
 public interface BooksService {
-	 void save(BooksDTO book);
-	 void update(BooksDTO book);
-	 void delete(BooksDTO book);
-	 BooksDTO findByIdBook(String id);
-	 List<BooksDTO> findAllByTitle(String titleTest);
-	 List<BooksDTO> findAll();
+	public BooksVO save(BooksDTO book);
+	public BooksVO update(BooksDTO book);
+	public BooksVO delete(BooksDTO book);
+	public BooksVO findAllByTitle(String titleTest);
+	public BooksVO findAll();
+	public BooksVO findByIdBook(String id);
 }
